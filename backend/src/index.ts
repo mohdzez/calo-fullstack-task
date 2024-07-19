@@ -6,8 +6,8 @@ import path from "path";
 import cors from "cors";
 
 const app = express();
-
 app.use(cors());
+
 const PORT = process.env.PORT || 3000;
 
 interface Job {
@@ -18,36 +18,47 @@ interface Job {
 
 const jobsFilePath = path.join(__dirname, "../data/jobs.json");
 
-function readJobsFromFile(): Job[] {
-  if (!fs.existsSync(jobsFilePath)) {
-    fs.writeFileSync(jobsFilePath, "[]", "utf-8");
+async function readJobsFromFile(): Promise<Job[]> {
+  try {
+    if (!fs.existsSync(jobsFilePath)) {
+      await fs.promises.writeFile(jobsFilePath, "[]", "utf-8");
+    }
+    const data = await fs.promises.readFile(jobsFilePath, "utf-8");
+    return JSON.parse(data) as Job[];
+  } catch (error) {
+    console.error("Error reading jobs file:", error);
+    return [];
   }
-  const data = fs.readFileSync(jobsFilePath, "utf-8");
-  return JSON.parse(data) as Job[];
 }
 
-function writeJobsToFile(jobs: Job[]): void {
-  fs.writeFileSync(jobsFilePath, JSON.stringify(jobs, null, 2), "utf-8");
+async function writeJobsToFile(jobs: Job[]): Promise<void> {
+  try {
+    await fs.promises.writeFile(
+      jobsFilePath,
+      JSON.stringify(jobs, null, 2),
+      "utf-8"
+    );
+  } catch (error) {
+    console.error("Error writing jobs file:", error);
+  }
 }
 
 app.use(express.json());
 
-// let clients: { id: string; res: Response }[] = [];
-let client: Response | undefined;
+let clients: { id: string; res: Response }[] = [];
 
 function sendEventToAllClients(job: Job) {
-  // clients.forEach(({ id, res }) => {
-  //   res.write(`data: ${JSON.stringify(job)}\n\n`);
-  // });
-  client?.write(`data: ${JSON.stringify(job)}\n\n`);
+  clients.forEach(({ res }) => {
+    res.write(`data: ${JSON.stringify(job)}\n\n`);
+  });
 }
 
-app.post("/api/jobs", (req: Request, res: Response) => {
-  const jobs = readJobsFromFile();
+app.post("/api/jobs", async (req: Request, res: Response) => {
+  const jobs = await readJobsFromFile();
   const jobId = uuidv4();
   const job: Job = { id: jobId, status: "pending", result: null };
   jobs.push(job);
-  writeJobsToFile(jobs);
+  await writeJobsToFile(jobs);
   sendEventToAllClients(job);
 
   // Simulate delayed execution
@@ -64,15 +75,20 @@ app.post("/api/jobs", (req: Request, res: Response) => {
     } catch (error) {
       job.status = "failed";
     }
-    writeJobsToFile(jobs);
+    const updatedJobs = await readJobsFromFile();
+    const jobIndex = updatedJobs.findIndex((j) => j.id === job.id);
+    if (jobIndex !== -1) {
+      updatedJobs[jobIndex] = job;
+      await writeJobsToFile(updatedJobs);
+    }
     sendEventToAllClients(job);
-  }, 5000);
+  }, Math.random() * (300000 - 5000) + 5000);
 
   res.status(201).json({ id: jobId });
 });
 
-app.get("/api/jobs", (req: Request, res: Response) => {
-  const jobs = readJobsFromFile();
+app.get("/api/jobs", async (req: Request, res: Response) => {
+  const jobs = await readJobsFromFile();
   const jobList = jobs.map(({ id, status, result }) => ({
     id,
     status,
@@ -81,8 +97,8 @@ app.get("/api/jobs", (req: Request, res: Response) => {
   res.json(jobList);
 });
 
-app.get("/api/jobs/:id", (req: Request, res: Response) => {
-  const jobs = readJobsFromFile();
+app.get("/api/jobs/:id", async (req: Request, res: Response) => {
+  const jobs = await readJobsFromFile();
   const jobId = req.params.id;
   const job = jobs.find((j) => j.id === jobId);
   if (job) {
@@ -98,14 +114,11 @@ app.get("/api/events", (req: Request, res: Response) => {
   res.setHeader("Connection", "keep-alive");
   res.flushHeaders();
 
-  client = res;
-
-  // const clientId = uuidv4();
-  // clients.push({ id: clientId, res });
+  const clientId = uuidv4();
+  clients.push({ id: clientId, res });
 
   req.on("close", () => {
-    // clients = clients.filter((client) => client.id !== clientId);
-    client = undefined;
+    clients = clients.filter((client) => client.id !== clientId);
   });
 });
 

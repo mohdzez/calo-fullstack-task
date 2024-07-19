@@ -1,79 +1,69 @@
-// import React, { useEffect, useState } from "react";
-// import axios from "axios";
+import React, { useState, useEffect } from "react";
+import axios from "axios";
 
-// interface Job {
-//   id: string;
-//   status: "pending" | "completed";
-//   result: string;
-// }
+interface Job {
+  id: string;
+  status: string;
+  result: string | null;
+}
 
-// const App: React.FC = () => {
-//   const [jobs, setJobs] = useState<Job[]>([]);
+const App: React.FC = () => {
+  const [jobs, setJobs] = useState<Job[]>([]);
+  const [newJobId, setNewJobId] = useState<string | null>(null);
 
-//   useEffect(() => {
-//     fetchJobs();
-//     const eventSource = new EventSource("http://localhost:3000/events");
-//     eventSource.onmessage = (event) => {
-//       const updatedJob = JSON.parse(event.data);
+  useEffect(() => {
+    fetchJobs();
+    const eventSource = new EventSource("http://localhost:3000/api/events");
+    eventSource.onmessage = (event) => {
+      const updatedJob: Job = JSON.parse(event.data);
+      setJobs((prevJobs) =>
+        prevJobs.map((job) => (job.id === updatedJob.id ? updatedJob : job))
+      );
+    };
 
-//       setJobs((prev) => {
-//         const index = prev.findIndex((j) => j.id === updatedJob.id);
+    return () => {
+      eventSource.close();
+    };
+  }, []);
 
-//         if (index !== -1) {
-//           prev[index] = updatedJob;
-//         }
+  const fetchJobs = async () => {
+    try {
+      const response = await axios.get<Job[]>("http://localhost:3000/api/jobs");
+      setJobs(response.data);
+    } catch (error) {
+      console.error("Error fetching jobs:", error);
+    }
+  };
 
-//         return [...prev];
-//       });
+  const createJob = async () => {
+    try {
+      const response = await axios.post<{ id: string }>(
+        "http://localhost:3000/api/jobs"
+      );
+      setNewJobId(response.data.id);
+      fetchJobs();
+    } catch (error) {
+      console.error("Error creating job:", error);
+    }
+  };
 
-//       console.log("Updated job:", updatedJob);
-//     };
-//     eventSource.onerror = (err) => {
-//       console.error("EventSource failed:", err);
-//       eventSource.close();
-//     };
+  return (
+    <div>
+      <h1>Jobs</h1>
+      <button onClick={createJob}>Create New Job</button>
+      <ul>
+        {jobs.map((job) => (
+          <li key={job.id}>
+            <p>Job ID: {job.id}</p>
+            <p>Status: {job.status}</p>
+            {job.result && (
+              <img src={job.result} alt="Job Result" width="200" />
+            )}
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+};
 
-//     return () => {
-//       eventSource.close();
-//     };
-//   }, []);
-
-//   const createJob = async () => {
-//     try {
-//       await axios.post("http://localhost:3000/jobs");
-//       fetchJobs();
-//     } catch (error) {
-//       console.error("Error creating job", error);
-//     }
-//   };
-
-//   const fetchJobs = async () => {
-//     try {
-//       const response = await axios.get<Job[]>("http://localhost:3000/jobs");
-//       setJobs(response.data);
-//     } catch (error) {
-//       console.error("Error fetching jobs", error);
-//     }
-//   };
-
-//   const renderJobs = () =>
-//     jobs.map(({ id, status, result }) => (
-//       <li key={id}>
-//         <p>Job ID: {id}</p>
-//         <p>Status: {status}</p>
-//         <img src={result} />
-//       </li>
-//     ));
-
-//   return (
-//     <div className="App">
-//       <header className="App-header">
-//         <h1>Job Tracker</h1>
-//         <button onClick={createJob}>Create Job</button>
-//         <ul>{renderJobs()}</ul>
-//       </header>
-//     </div>
-//   );
-// };
-
-// export default App;
+export default App;

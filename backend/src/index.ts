@@ -1,14 +1,20 @@
+import "dotenv/config";
 import express, { Request, Response } from "express";
 import { v4 as uuidv4 } from "uuid";
 import axios from "axios";
 import fs from "fs";
 import path from "path";
 import cors from "cors";
+import morgan from "morgan";
+import { PORT, UNSPLASH_CLIENT_ID } from "./config";
+
+require("dotenv").config();
 
 const app = express();
-app.use(cors());
 
-const PORT = process.env.PORT || 3000;
+app.use(express.json());
+app.use(morgan("common"));
+app.use(cors());
 
 interface Job {
   id: string;
@@ -43,8 +49,6 @@ async function writeJobsToFile(jobs: Job[]): Promise<void> {
   }
 }
 
-app.use(express.json());
-
 let clients: { id: string; res: Response }[] = [];
 
 function sendEventToAllClients(job: Job) {
@@ -61,18 +65,17 @@ app.post("/api/jobs", async (req: Request, res: Response) => {
   await writeJobsToFile(jobs);
   sendEventToAllClients(job);
 
-  // Simulate delayed execution
   setTimeout(async () => {
     try {
       const imageUrl = await axios
         .get(
-          "https://api.unsplash.com/photos/random?client_id=rhcw3xrQMwTXE7istyNMWD8bFKIp1EvANjBZgYveNfI&query=food+healthy"
+          `https://api.unsplash.com/photos/random?client_id=${UNSPLASH_CLIENT_ID}&query=food+healthy+green`
         )
         .then((res) => res.data)
         .then((data) => data.urls.regular);
       job.status = "resolved";
       job.result = imageUrl;
-    } catch (error) {
+    } catch (error: any) {
       job.status = "failed";
     }
     const updatedJobs = await readJobsFromFile();
@@ -82,7 +85,7 @@ app.post("/api/jobs", async (req: Request, res: Response) => {
       await writeJobsToFile(updatedJobs);
     }
     sendEventToAllClients(job);
-  }, Math.random() * (300000 - 5000) + 5000);
+  }, 5000);
 
   res.status(201).json({ id: jobId });
 });

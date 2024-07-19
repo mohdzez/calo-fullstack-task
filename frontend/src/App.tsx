@@ -1,5 +1,8 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
+import Masonry, { ResponsiveMasonry } from "react-responsive-masonry";
+import JobItem from "./components/JobItem";
+import { Button, Typography } from "antd";
 
 interface Job {
   id: string;
@@ -9,7 +12,7 @@ interface Job {
 
 const App: React.FC = () => {
   const [jobs, setJobs] = useState<Job[]>([]);
-  const [newJobId, setNewJobId] = useState<string | null>(null);
+  const [, setNewJobId] = useState<string | null>(null);
 
   useEffect(() => {
     fetchJobs();
@@ -49,19 +52,36 @@ const App: React.FC = () => {
 
   return (
     <div>
-      <h1>Jobs</h1>
-      <button onClick={createJob}>Create New Job</button>
-      <ul>
-        {jobs.map((job) => (
-          <li key={job.id}>
-            <p>Job ID: {job.id}</p>
-            <p>Status: {job.status}</p>
-            {job.result && (
-              <img src={job.result} alt="Job Result" width="200" />
-            )}
-          </li>
-        ))}
-      </ul>
+      <div className="z-50 sticky py-1 bg-white top-0 w-full flex items-center px-2 justify-between">
+        <Typography className="font-semibold text-base tracking-wider">
+          CALO
+        </Typography>
+
+        <Button onClick={createJob}>Create</Button>
+      </div>
+
+      {jobs.length > 0 ? (
+        <ResponsiveMasonry
+          columnsCountBreakPoints={{ 350: 1, 750: 2, 900: 4, 1200: 5 }}
+        >
+          <Masonry>
+            {jobs.map((job) => (
+              <div key={job.id}>
+                <JobItem id={job.id} result={job.result} status={job.status} />
+              </div>
+            ))}
+          </Masonry>
+        </ResponsiveMasonry>
+      ) : (
+        <div className="h-[50vh] flex flex-col items-center justify-center">
+          <Typography className="text-base font-semibold mb-2">
+            No jobs to Process yet 🥲.
+          </Typography>
+          <Button className="animate-bounce" onClick={createJob}>
+            Create
+          </Button>
+        </div>
+      )}
     </div>
   );
 };

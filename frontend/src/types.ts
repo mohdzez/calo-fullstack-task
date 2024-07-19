@@ -1,5 +1,5 @@
 export interface Job {
   id: string;
-  status: "pending" | "resolved" | "failed";
+  status: string | null;
   result: string | null;
 }

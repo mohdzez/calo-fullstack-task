@@ -1,4 +1,6 @@
 # Calo Full Stack Task
+![calo-client-preview](https://github.com/user-attachments/assets/cbd1d7c3-3c62-414e-b60b-58cdb44f7991)
+
 
 ## Description
 
@@ -10,7 +12,7 @@ This project is a full-stack application designed as a task for Calo. It include
 
 ## Table of Contents
 
-- [Installation](#installation)
+- [Installation](#Installation)
 - [TimeReport](#TimeReport)
 - [Technologies](#Technologies)
 

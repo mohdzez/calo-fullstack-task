@@ -1,4 +1,3 @@
-import React from "react";
 import {
   DownloadOutlined,
   ExclamationOutlined,
@@ -16,8 +15,6 @@ import { Job } from "../types";
 const JobItem = ({ id, result, status }: Job) => {
   const src = result;
 
-  // you can download flipped and rotated image
-  // https://codesandbox.io/s/zi-ding-yi-gong-ju-lan-antd-5-7-0-forked-c9jvmp
   const onDownload = (imgUrl: string) => {
     fetch(imgUrl)
       .then((response) => response.blob())
@@ -37,10 +34,9 @@ const JobItem = ({ id, result, status }: Job) => {
     case "resolved":
       return (
         <Image
-          className="p-1"
+          className="p-1 rounded-xl shadow-sm"
           loading="lazy"
           key={id}
-          //   width={400}
           src={src || "images"}
           preview={{
             toolbarRender: (
@@ -59,7 +55,7 @@ const JobItem = ({ id, result, status }: Job) => {
                 },
               }
             ) => (
-              <Space size={12} className="toolbar-wrapper">
+              <Space size={12} className="toolbar-wrapper  ">
                 <DownloadOutlined onClick={() => onDownload(url)} />
                 <SwapOutlined rotate={90} onClick={onFlipY} />
                 <SwapOutlined onClick={onFlipX} />
@@ -86,7 +82,7 @@ const JobItem = ({ id, result, status }: Job) => {
         <div className="h-64 w-full flex items-center justify-center">
           <ExclamationOutlined style={{ fontSize: 48 }} />
           <div>
-            <p>Failed to Assign Image </p>
+            <p>Failed to Assign Image: 🚀 Auto Refresh in 1 hour </p>
             <ul className="text-xs text-gray-800">
               <li> + Unsplash Limit Reached</li>
               <li> + Abrupt Server Timeout</li>
@@ -95,6 +91,18 @@ const JobItem = ({ id, result, status }: Job) => {
         </div>
       );
     default:
+      return (
+        <div className="h-64 w-full flex items-center justify-center">
+          <ExclamationOutlined style={{ fontSize: 48 }} />
+          <div>
+            <p>Encountered Unexpected Issue </p>
+            <ul className="text-xs text-gray-800">
+              <li> + Check Server</li>
+              <li> + Refresh webpage</li>
+            </ul>
+          </div>
+        </div>
+      );
       break;
   }
 };

@@ -82,7 +82,7 @@ const JobItem = ({ id, result, status }: Job) => {
         <div className="h-64 w-full flex items-center justify-center">
           <ExclamationOutlined style={{ fontSize: 48 }} />
           <div>
-            <p>Failed to Assign Image: 🚀 Auto Refresh in 1 hour </p>
+            <p>Failed to Assign Image: </p>
             <ul className="text-xs text-gray-800">
               <li> + Unsplash Limit Reached</li>
               <li> + Abrupt Server Timeout</li>

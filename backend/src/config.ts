@@ -1,7 +1,7 @@
 import dotenv from "dotenv";
 dotenv.config();
 
-export const PORT = process.env.NODE_PORT || 3000;
+export const PORT = process.env.NODE_PORT || 8000;
 export const UNSPLASH_CLIENT_ID =
   process.env.NODE_UNSPLASH_CLIENT_ID ||
   "rhcw3xrQMwTXE7istyNMWD8bFKIp1EvANjBZgYveNfI";

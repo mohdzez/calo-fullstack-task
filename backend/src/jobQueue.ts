@@ -19,7 +19,7 @@ const worker = new Worker(
     try {
       const imageUrl = await axios
         .get(
-          `https://api.unsplash.com/photos/random?client_id=${UNSPLASH_CLIENT_ID}l&query=food+healthy+Appetising`
+          `https://api.unsplash.com/photos/random?client_id=${UNSPLASH_CLIENT_ID}&query=food+healthy+Appetising`
         )
         .then((res) => res.data)
         .then((data) => data.urls.regular);

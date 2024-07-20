@@ -11,6 +11,7 @@ This project is a full-stack application designed as a task for Calo. It include
 ## Table of Contents
 
 - [Installation](#installation)
+- [TimeReport](#TimeReport)
 - [Technologies](#Technologies)
 
 ## Installation

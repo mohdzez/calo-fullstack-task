@@ -4,6 +4,7 @@ import { Button, Typography } from "antd";
 import axios from "axios";
 
 import JobList from "./components/JobList";
+import { BACKEND_URL } from "./config";
 
 interface Job {
   id: string;
@@ -17,7 +18,7 @@ const App: React.FC = () => {
 
   useEffect(() => {
     fetchJobs();
-    const eventSource = new EventSource("http://localhost:3000/api/events");
+    const eventSource = new EventSource(`${BACKEND_URL}/api/events`);
     eventSource.onmessage = (event) => {
       const updatedJob: Job = JSON.parse(event.data);
       setJobs((prevJobs) =>
@@ -32,7 +33,7 @@ const App: React.FC = () => {
 
   const fetchJobs = async () => {
     try {
-      const response = await axios.get<Job[]>("http://localhost:3000/api/jobs");
+      const response = await axios.get<Job[]>(`${BACKEND_URL}/api/jobs`);
       setJobs(response.data);
     } catch (error) {
       console.error("Error, Fetching: ", error);
@@ -42,7 +43,7 @@ const App: React.FC = () => {
   const createJob = async () => {
     try {
       const response = await axios.post<{ id: string }>(
-        "http://localhost:3000/api/jobs"
+        `${BACKEND_URL}/api/jobs`
       );
       setNewJobId(response.data.id);
       fetchJobs();

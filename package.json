@@ -4,7 +4,9 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "concurrently \"cd backend && npm run dev\" \"cd frontend && npm run dev\" "
+    "ins_dep": "concurrently \"cd backend && npm ci\" \"cd frontend && npm ci\" ",
+    "dev": "concurrently \"cd backend && npm run dev\" \"cd frontend && npm run dev\" ",
+    "start": "concurrently \"cd backend && npm run dev\" \"cd frontend && npm run dev\" "
   },
   "author": "",
   "license": "ISC",

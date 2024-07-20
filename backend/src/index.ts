@@ -20,6 +20,7 @@ interface Job {
   id: string;
   status: string;
   result: string | null;
+  createdAt: number; // Timestamp of job creation
 }
 
 const jobsFilePath = path.join(__dirname, "../data/jobs.json");
@@ -60,24 +61,50 @@ function sendEventToAllClients(job: Job) {
 app.post("/api/jobs", async (req: Request, res: Response) => {
   const jobs = await readJobsFromFile();
   const jobId = uuidv4();
-  const job: Job = { id: jobId, status: "pending", result: null };
+  const job: Job = {
+    id: jobId,
+    status: "pending",
+    result: null,
+    createdAt: Date.now(),
+  };
   jobs.push(job);
   await writeJobsToFile(jobs);
   sendEventToAllClients(job);
 
-  setTimeout(async () => {
-    try {
-      const imageUrl = await axios
-        .get(
-          `https://api.unsplash.com/photos/random?client_id=${UNSPLASH_CLIENT_ID}&query=food+healthy+green`
-        )
-        .then((res) => res.data)
-        .then((data) => data.urls.regular);
-      job.status = "resolved";
-      job.result = imageUrl;
-    } catch (error: any) {
-      job.status = "failed";
-    }
+  scheduleJob(job); // Schedule the job processing
+
+  res.status(201).json({ id: jobId });
+});
+
+async function scheduleJob(job: Job) {
+  const delay = Math.random() * (300000 - 5000) + 5000; // Delay between 5 seconds and 5 minutes
+  const remainingTime = delay - (Date.now() - job.createdAt);
+
+  if (remainingTime > 0) {
+    setTimeout(async () => {
+      try {
+        const imageUrl = await axios
+          .get(
+            `https://api.unsplash.com/photos/random?client_id=${UNSPLASH_CLIENT_ID}&query=food+healthy+green`
+          )
+          .then((res) => res.data)
+          .then((data) => data.urls.regular);
+        job.status = "resolved";
+        job.result = imageUrl;
+      } catch (error: any) {
+        job.status = "failed";
+      }
+      const updatedJobs = await readJobsFromFile();
+      const jobIndex = updatedJobs.findIndex((j) => j.id === job.id);
+      if (jobIndex !== -1) {
+        updatedJobs[jobIndex] = job;
+        await writeJobsToFile(updatedJobs);
+      }
+      sendEventToAllClients(job);
+    }, remainingTime);
+  } else {
+    // If remainingTime is negative, process the job immediately
+    job.status = "failed";
     const updatedJobs = await readJobsFromFile();
     const jobIndex = updatedJobs.findIndex((j) => j.id === job.id);
     if (jobIndex !== -1) {
@@ -85,10 +112,8 @@ app.post("/api/jobs", async (req: Request, res: Response) => {
       await writeJobsToFile(updatedJobs);
     }
     sendEventToAllClients(job);
-  }, 5000);
-
-  res.status(201).json({ id: jobId });
-});
+  }
+}
 
 app.get("/api/jobs", async (req: Request, res: Response) => {
   const jobs = await readJobsFromFile();
@@ -125,6 +150,12 @@ app.get("/api/events", (req: Request, res: Response) => {
   });
 });
 
-app.listen(PORT, () => {
+async function initializePendingJobs() {
+  const jobs = await readJobsFromFile();
+  jobs.filter((job) => job.status === "pending").forEach(scheduleJob);
+}
+
+app.listen(PORT, async () => {
   console.log(`Server is running on port ${PORT}`);
+  await initializePendingJobs(); // Initialize pending jobs on server start
 });

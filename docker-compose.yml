@@ -1,0 +1,13 @@
+version: '3.9'
+services:
+  redis:
+    image: redis
+    container_name: redis-bullmq-calo
+    restart: always
+    ports:
+    - "6379:6379"
+
+
+   
+    
+   

@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import Masonry, { ResponsiveMasonry } from "react-responsive-masonry";
+import { animateScroll } from "react-scroll";
+
 import JobItem from "./components/JobItem";
 import { Button, Typography } from "antd";
 
@@ -45,6 +47,8 @@ const App: React.FC = () => {
       );
       setNewJobId(response.data.id);
       fetchJobs();
+
+      animateScroll.scrollToBottom();
     } catch (error) {
       console.error("Error creating job:", error);
     }
@@ -52,7 +56,7 @@ const App: React.FC = () => {
 
   return (
     <div>
-      <div className="z-50 sticky py-1 bg-white top-0 w-full flex items-center px-2 justify-between">
+      <div className="z-50 sticky py-1 bg-white top-0 w-full flex items-center px-2 justify-between drop-shadow-md">
         <Typography className="font-semibold text-base tracking-wider">
           CALO
         </Typography>

@@ -24,7 +24,7 @@ This project is a full-stack application designed as a task for Calo. It include
   - docker-compose up
   - npm run ins_dep
   - npm run dev
-- 5 The Client Should be live on ( http://localhost:5173 )
+- 5 The Client Should be live on ( http://localhost:3000 )
 
 ## TimeReport
 

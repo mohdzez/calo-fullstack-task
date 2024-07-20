@@ -28,6 +28,18 @@
     background-color: #27ae60;
 }
 
+
+
+.ant-btn:hover {
+    border-color: #27ae60 !important;
+    color: #27ae60 !important;
+}
+
+.ant-btn:focus {
+    -webkit-box-shadow: 0 0 0 2px #2ecc71;
+    box-shadow: 0 0 0 2px #e0f7e9;
+}
+
 * {
     scrollbar-width: thin;
     scrollbar-color: #2ecc71 #e0f7e9;

@@ -19,7 +19,7 @@ const worker = new Worker(
     try {
       const imageUrl = await axios
         .get(
-          `https://api.unsplash.com/photos/random?client_id=${UNSPLASH_CLIENT_ID}&query=food+healthy+green`
+          `https://api.unsplash.com/photos/random?client_id=${UNSPLASH_CLIENT_ID}l&query=food+healthy+Appetising`
         )
         .then((res) => res.data)
         .then((data) => data.urls.regular);
@@ -27,7 +27,7 @@ const worker = new Worker(
       return imageUrl;
     } catch (error) {
       await updateJobStatus(id, "failed", null);
-      throw new Error(error + "");
+      throw new Error("Failed to fetch image : " + error);
     }
   },
   { connection }
